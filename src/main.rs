@@ -2,6 +2,12 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
+/// Function with combinator
+/// 
+/// The main goal is to return a Result type, because of we want to know the result 
+/// or the error description. That is the main difference between Option and Result.
+/// Some map here is using for converting Option type to Result type
+///
 fn file_double_w_combinator<P: AsRef<Path>>(file_path: P) -> Result<i32, String> {
 	File::open(file_path)
 		.map_err(|err| err.to_string())
@@ -18,6 +24,22 @@ fn file_double_w_combinator<P: AsRef<Path>>(file_path: P) -> Result<i32, String>
 		.map(|n| 2*n)
 }
 
+/// Function with combinator and macro
+///
+/// A little simplier but the same as above
+///
+fn file_double_w_macro<P: AsRef<Path>>(file_path: P) -> Result<i32, String> {
+	let mut file = File::open(file_path).map_err(|e| e.to_string())?;
+	let mut contents = String::new();
+	file.read_to_string(&mut contents).map_err(|e| e.to_string())?;
+	let n = contents.trim().parse::<i32>().map_err(|e| e.to_string())?;
+	Ok(2*n)
+}
+
+/// Function with return
+///
+/// The same as above, but without combinators
+///
 fn file_double_w_return<P: AsRef<Path>>(file_path: P) -> Result<i32, String> {
 	let mut file = match File::open(file_path) {
 		Ok(file) => file,
@@ -44,6 +66,11 @@ fn main() {
 	}
 	
     match file_double_w_return("test.txt") {
+		Ok(n) => println!("{}", n),
+		Err(err) => println!("Error: {}", err),
+	}	
+	
+    match file_double_w_macro("test.txt") {
 		Ok(n) => println!("{}", n),
 		Err(err) => println!("Error: {}", err),
 	}	
